@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Owl Species Team Spinner</title><style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Trebuchet MS,Arial,sans-serif;color:#12375a;text-align:center;background:linear-gradient(#8bd5f4 0 42%,#d9e8bf 42% 68%,#79bdd3 68%)}
+h1{display:inline-block;margin:18px 8px 4px;padding:10px 26px;background:#d49a59;border:5px solid #70451f;border-radius:16px;box-shadow:0 5px #5a371b;font-size:clamp(26px,4vw,44px)}
+.sub{font-weight:800;margin:10px}.main{display:flex;justify-content:center;align-items:center;gap:25px;flex-wrap:wrap;padding:10px 18px 20px}.wheelbox{position:relative;width:min(74vw,640px);aspect-ratio:1}
+#wheel{width:100%;height:100%;transition:transform 4.6s cubic-bezier(.12,.72,.15,1);filter:drop-shadow(0 8px 7px #0004)}
+.pointer{position:absolute;z-index:5;top:-4px;left:50%;transform:translateX(-50%);border-left:28px solid transparent;border-right:28px solid transparent;border-top:62px solid #70451f}
+#spin{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:145px;height:145px;border-radius:50%;border:7px solid #fff0d1;background:#c98b49;color:#12375a;font-size:29px;font-weight:900;cursor:pointer;box-shadow:0 6px #70451f}
+#spin small{display:block;font-size:11px}.panel{width:min(90vw,300px);background:#d49a59;border:5px solid #70451f;border-radius:18px;padding:14px;box-shadow:0 6px #5a371b}.card{background:#fff8e9;border-radius:12px;padding:12px;margin:9px 0;font-weight:800}
+#reset{width:100%;padding:11px;border:3px solid #70451f;border-radius:11px;background:#835127;color:white;font-weight:900;font-size:15px;cursor:pointer}
+#result{font-size:clamp(22px,3vw,37px);font-weight:900;min-height:48px;margin-bottom:18px;padding:4px 12px}
+@media(max-width:800px){.wheelbox{width:min(94vw,600px)}}
+</style></head><body><h1>🦉 Owl Team Spinner</h1><div class="sub">Which team will it be?</div><div class="main">
+<div class="wheelbox"><div class="pointer"></div><svg id="wheel" viewBox="0 0 600 600"></svg><button id="spin">SPIN<small>to choose your team!</small></button></div>
+<div class="panel"><h2>Balanced Assignment</h2><div class="card">Each of the 8 teams is chosen once before a new round begins.</div><button id="reset">↻ Reset Teams</button><div class="card" id="remaining"></div></div></div>
+<div id="result">Click SPIN to choose an Owl Team!</div>
+<script>
+const teams=[
+["Red — Great Horned Owls","#c62828","#fff"],["Orange — Barn Owls","#ef7d00","#fff"],["Yellow — Burrowing Owls","#ffc928","#17324d"],["Green — Great Gray Owls","#18a63a","#fff"],
+["Blue — Snowy Owls","#1761c9","#fff"],["Purple — Long-eared Owls","#7a35d2","#fff"],["Pink — Northern Saw-whet Owls","#ec5a9a","#17324d"],["Teal — Northern Hawk Owls","#25b7b7","#17324d"]];
+const svg=document.getElementById("wheel"),NS="http://www.w3.org/2000/svg",cx=300,cy=300,r=282,slice=45;
+function pt(a,rad){let t=(a-90)*Math.PI/180;return[cx+rad*Math.cos(t),cy+rad*Math.sin(t)]}
+teams.forEach((t,i)=>{let a=i*slice,b=(i+1)*slice,p1=pt(a,r),p2=pt(b,r),path=document.createElementNS(NS,"path");
+path.setAttribute("d",`M300 300 L${p1[0]} ${p1[1]} A${r} ${r} 0 0 1 ${p2[0]} ${p2[1]} Z`);path.setAttribute("fill",t[1]);path.setAttribute("stroke","#fff4dd");path.setAttribute("stroke-width","5");svg.appendChild(path);
+let m=a+22.5,p=pt(m,200),g=document.createElementNS(NS,"g");g.setAttribute("transform",`rotate(${m} ${p[0]} ${p[1]})`);
+let owl=document.createElementNS(NS,"text");owl.setAttribute("x",p[0]);owl.setAttribute("y",p[1]-14);owl.setAttribute("text-anchor","middle");owl.setAttribute("font-size","28");owl.textContent="🦉";g.appendChild(owl);
+let label=document.createElementNS(NS,"text");label.setAttribute("x",p[0]);label.setAttribute("y",p[1]+15);label.setAttribute("text-anchor","middle");label.setAttribute("fill",t[2]);label.setAttribute("font-size","13");label.setAttribute("font-weight","900");label.textContent=t[0].split(" — ")[0];g.appendChild(label);svg.appendChild(g)});
+let ring=document.createElementNS(NS,"circle");ring.setAttribute("cx",300);ring.setAttribute("cy",300);ring.setAttribute("r",282);ring.setAttribute("fill","none");ring.setAttribute("stroke","#12375a");ring.setAttribute("stroke-width","13");svg.appendChild(ring);
+let available=[0,1,2,3,4,5,6,7],rotation=0,spinning=false;const btn=document.getElementById("spin"),result=document.getElementById("result"),remaining=document.getElementById("remaining");
+function update(){remaining.textContent=`${available.length} of 8 teams left this round`}
+function reset(){available=[0,1,2,3,4,5,6,7];result.textContent="All 8 Owl Teams are back in the wheel!";update()}
+function rnd(max){if(window.crypto&&crypto.getRandomValues){let a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%max}return Math.floor(Math.random()*max)}
+btn.onclick=()=>{if(spinning)return;if(!available.length)reset();let pos=rnd(available.length),chosen=available.splice(pos,1)[0];spinning=true;btn.disabled=true;result.textContent="🦉 Who will it be?";
+let center=chosen*slice+22.5,current=((rotation%360)+360)%360,desired=(360-center)%360,adjust=(desired-current+360)%360;rotation+=360*7+adjust;svg.style.transform=`rotate(${rotation}deg)`;
+setTimeout(()=>{result.textContent="🎉 "+teams[chosen][0]+"!";spinning=false;btn.disabled=false;update()},4700)};
+document.getElementById("reset").onclick=reset;update();
+</script></body></html>
